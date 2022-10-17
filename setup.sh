@@ -149,6 +149,7 @@ fi
 
 rm ~/.zshrc
 cp assets/.zshrc ~/.zshrc
+echo -e ${G} "Switch to ZSH"${E}
 zsh
 
 #########################
@@ -202,9 +203,13 @@ else [[ "$DISTRO" == *"fedora"* ]] || [[ "$DISTRO" == *"centos"* ]] || [[ "$DIST
 fi
 
 #########################
-# Install Kubectx
+# Install Krew
 #########################
 
+KREWDIR=~/.krew
+if [ -d "$KREWDIR" ]; then
+    echo -e ${G} "$KREWDIR exists. No need to install Krew again."${E}
+else
 (
   set -x; cd "$(mktemp -d)" &&
   OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
@@ -214,6 +219,7 @@ fi
   tar zxvf "${KREW}.tar.gz" &&
   ./"${KREW}" install krew
 )
+fi
 
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 zsh
