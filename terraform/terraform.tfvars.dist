@@ -1,6 +1,6 @@
 # General User variables
 deployment_name = "cape-demo1"
-user = "cape"
+user = "capeuser"
 code_server_password = "<SOME-COMPLEX-PASSWORD>"
 
 # Hetzner (hcloud) variables

@@ -1,6 +1,7 @@
 # User Variables
 VSCODE_PASSWORD=SOME-SECURE-PASSWORD
-SERVER_IP=10.10.10.10 #enter your server IP here
+SERVER_IP=10.10.10.10 #enter your server IP 
+GH_PAT=Secure-GH-PAT
 
 # Misc Variables (Typically no need to change these.)
 VSCODE_DIR_PATH=/cape
