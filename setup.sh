@@ -149,8 +149,6 @@ fi
 
 rm ~/.zshrc
 cp assets/.zshrc ~/.zshrc
-echo -e ${G} "Switch to ZSH"${E}
-zsh
 
 #########################
 # Install Docker
@@ -222,7 +220,6 @@ else
 fi
 
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-zsh
 
 #########################
 # Install kubectx & kubens
@@ -304,6 +301,36 @@ fi
 #########################
 # deploy K3d clusters
 #########################
+k3d registry create docker-io -p 5000 --proxy-remote-url https://registry-1.docker.io -v ~/.local/share/docker-io-registry:/var/lib/registry
 
-k3d cluster create mycluster
-k3d kubeconfig merge mycluster --kubeconfig-switch-context
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* saas -p "80:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write saas
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-saas.yaml
+k3d kubeconfig merge saas
+
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write eks-demo
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-demo.yaml
+k3d kubeconfig merge eks-demo
+
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write aks-demo
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-demo.yaml
+k3d kubeconfig merge aks-demo
+
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* k3s-demo -p "8030:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write k3s-demo
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-k3s-demo.yaml
+k3d kubeconfig merge k3s-demo
+
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write eks-smoketest
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-smoketest.yaml
+k3d kubeconfig merge eks-smoketest
+
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d kubeconfig write aks-smoketest
+sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-smoketest.yaml
+k3d kubeconfig merge aks-smoketest
+
+zsh
