@@ -235,6 +235,14 @@ kubectl krew install ns
 echo -e ${G}"Installing k3d..."${E}
 curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
+#########################
+# Install Helm
+#########################
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+rm get_helm.sh
 
 
 #########################
@@ -304,7 +312,7 @@ fi
 mkdir /home/$USER/.kube
 k3d registry create docker-io -p 5000 --proxy-remote-url https://registry-1.docker.io -v ~/.local/share/docker-io-registry:/var/lib/registry
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* saas -p "80:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* --k3s-arg "--no-deploy=traefik@server" saas --servers 1 --agents 3 -p "80:80@loadbalancer:*" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
 k3d kubeconfig write saas
 sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-saas.yaml
 k3d kubeconfig merge saas
@@ -338,4 +346,11 @@ sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-smoketest.yaml
 k3d kubeconfig merge aks-smoketest
 cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
 
-zsh
+#########################
+# Deploy Cape
+#########################
+
+cd ~
+git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git
+cd cape-single-node-deploy-scripts
+./install-cape-single.sh
