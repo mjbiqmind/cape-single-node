@@ -195,6 +195,7 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl  > /dev/null
 #########################
 # Install FZF
 #########################
+echo -e ${G}"Installing FZF..."${E}
 if [[ "$DISTRO" == *"Ubuntu"* ]] || [[ "$DISTRO" == *"debian"* ]]; then
     sudo apt-get install fzf
 else [[ "$DISTRO" == *"fedora"* ]] || [[ "$DISTRO" == *"centos"* ]] || [[ "$DISTRO" == *"rocky"* ]];
@@ -205,6 +206,7 @@ fi
 # Install Krew
 #########################
 
+echo -e ${G}"Installing Krew..."${E}
 KREWDIR=~/.krew
 if [ -d "$KREWDIR" ]; then
     echo -e ${G} "$KREWDIR exists. No need to install Krew again."${E}
@@ -220,7 +222,7 @@ else
 )
 fi
 
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+grep -qxF 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' ~/.bashrc || echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> ~/.bashrc
 
 #########################
 # Install kubectx & kubens
@@ -240,6 +242,7 @@ curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 # Install Helm
 #########################
 
+echo -e ${G}"Installing Helm..."${E}
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -251,10 +254,11 @@ rm get_helm.sh
 #########################
 
 ## Install VSCode Server on Debian Based
+echo -e ${G}"Installing Code Server..."${E}
 CODE=/lib/systemd/system/code-server@.service
 if [ -f "$CODE" ]; then
   echo "Nothing to do, VSCode Server already installed..."
-elif [[ "$DISTRO" == *"Ubuntu"* && -d "$CODE" ]] || [[ "$DISTRO" == *"debian"* ]]; then
+elif [[ "$DISTRO" == *"Ubuntu"* ]] || [[ "$DISTRO" == *"debian"* ]]; then
     echo -e ${G}"Installing VSCode-Server..."${E}
     sudo mkdir -p $VSCODE_DIR_PATH
     mkdir -p /home/$USER/misc/code-server/User
@@ -323,6 +327,7 @@ else
   k3d registry create docker-io -p 5000 --proxy-remote-url https://registry-1.docker.io -v ~/.local/share/docker-io-registry:/var/lib/registry
 fi
 
+sleep 10
 echo -e ${G}"Deploying K3d SaaS..."${E}
 SAAS=`k3d cluster list | grep saas |  wc -l`
 if [[ $SAAS -eq 1 ]]; then
@@ -334,6 +339,7 @@ else
   k3d kubeconfig merge saas
 fi
 
+sleep 10
 echo -e ${G}"Deploying K3d eks-demo..."${E}
 EKSDEMO=`k3d cluster list | grep eks-demo |  wc -l`
 if [[ $EKSDEMO -eq 1 ]]; then
@@ -346,6 +352,7 @@ else
   cp ~/.k3d/kubeconfig-eks-demo.yaml /home/$USER/.kube/eks-useast1-prod
 fi
 
+sleep 10
 echo -e ${G}"Deploying K3d aks-demo..."${E}
 AKSDEMO=`k3d cluster list | grep aks-demo |  wc -l`
 if [[ $AKSDEMO -eq 1 ]]; then
@@ -358,6 +365,7 @@ else
   cp ~/.k3d/kubeconfig-aks-demo.yaml /home/$USER/.kube/aks-sea-prod
 fi 
 
+sleep 10
 echo -e ${G}"Deploying K3d k3s-demo..."${E}
 K3SDEMO=`k3d cluster list | grep k3s-demo |  wc -l`
 if [[ $K3SDEMO -eq 1 ]]; then
@@ -369,6 +377,7 @@ else
   k3d kubeconfig merge k3s-demo
 fi
 
+sleep 10
 echo -e ${G}"Deploying K3d eks-smoketest..."${E}
 EKSSMOKE=`k3d cluster list | grep eks-smoketest |  wc -l`
 if [[ $EKSSMOKE -eq 1 ]]; then
@@ -381,7 +390,7 @@ else
   cp ~/.k3d/kubeconfig-eks-smoketest.yaml /home/$USER/.kube/prod-aws
 fi
 
-
+sleep 10
 echo -e ${G}"Deploying K3d aks-smoketest..."${E}
 AKSSMOKE=`k3d cluster list | grep aks-smoketest |  wc -l`
 if [[ $AKSSMOKE -eq 1 ]]; then
@@ -403,4 +412,3 @@ echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
 echo $GH_PAT1
 git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git
 cd cape-single-node-deploy-scripts
-./install-cape-single.sh

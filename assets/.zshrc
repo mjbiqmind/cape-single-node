@@ -109,3 +109,5 @@ source $ZSH/oh-my-zsh.sh
 alias k="kubectl"
 alias kubectx="kubectl ctx"
 alias kubectns="kubectl ns"
+
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
