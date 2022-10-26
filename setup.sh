@@ -222,6 +222,7 @@ else
 )
 fi
 
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 grep -qxF 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' ~/.bashrc || echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> ~/.bashrc
 
 #########################
@@ -409,6 +410,7 @@ fi
 
 cd ~
 echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
-echo $GH_PAT1
 git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git
 cd cape-single-node-deploy-scripts
+cp ~/cape-single-node/.vars .
+./install-cape-single.sh
