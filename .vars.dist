@@ -1,6 +1,5 @@
 # User Variables
 VSCODE_PASSWORD=SOME-SECURE-PASSWORD
-SERVER_IP=10.10.10.10 #enter your server IP 
 GH_PAT1=Secure-GH-PAT1
 GH_PAT2=Secure-GH-PAT2
 CAPE_DEMO_FQDN=cape-demo.biqmind.sh

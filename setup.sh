@@ -17,6 +17,7 @@ else
 fi
 
 source .vars
+SERVER_IP=`curl ifconfig.me`
 
 # Determine OS platform
 UNAME=$(uname | tr "[:upper:]" "[:lower:]")
@@ -250,7 +251,10 @@ rm get_helm.sh
 #########################
 
 ## Install VSCode Server on Debian Based
-if [[ "$DISTRO" == *"Ubuntu"* ]] || [[ "$DISTRO" == *"debian"* ]]; then
+CODE=/lib/systemd/system/code-server@.service
+if [ -f "$CODE" ]; then
+  echo "Nothing to do, VSCode Server already installed..."
+elif [[ "$DISTRO" == *"Ubuntu"* && -d "$CODE" ]] || [[ "$DISTRO" == *"debian"* ]]; then
     echo -e ${G}"Installing VSCode-Server..."${E}
     sudo mkdir -p $VSCODE_DIR_PATH
     mkdir -p /home/$USER/misc/code-server/User
@@ -309,48 +313,94 @@ fi
 #########################
 # deploy K3d clusters
 #########################
-mkdir /home/$USER/.kube
-k3d registry create docker-io -p 5000 --proxy-remote-url https://registry-1.docker.io -v ~/.local/share/docker-io-registry:/var/lib/registry
+mkdir -p /home/$USER/.kube
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* --k3s-arg "--no-deploy=traefik@server" saas --servers 1 --agents 3 -p "80:80@loadbalancer:*" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write saas
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-saas.yaml
-k3d kubeconfig merge saas
+echo -e ${G}"Deploying K3d Registry..."${E}
+REGISTRY=`k3d registry list | grep k3d-docker-io |  wc -l`
+if [[ $REGISTRY -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, registry exists..."${E}
+else
+  k3d registry create docker-io -p 5000 --proxy-remote-url https://registry-1.docker.io -v ~/.local/share/docker-io-registry:/var/lib/registry
+fi
 
-k3d cluster create --api-port 16443 --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write eks-demo
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-demo.yaml
-k3d kubeconfig merge eks-demo
-cp ~/.k3d/kubeconfig-eks-demo.yaml /home/$USER/.kube/eks-useast1-prod
+echo -e ${G}"Deploying K3d SaaS..."${E}
+SAAS=`k3d cluster list | grep saas |  wc -l`
+if [[ $SAAS -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d SaaS exists..."
+else
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* --k3s-arg "--no-deploy=traefik@server:*" saas --servers 1 --agents 3 -p "80:80@loadbalancer:*" -p "443:443@loadbalancer:*" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write saas
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-saas.yaml
+  k3d kubeconfig merge saas
+fi
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write aks-demo
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-demo.yaml
-k3d kubeconfig merge aks-demo
-cp ~/.k3d/kubeconfig-aks-demo.yaml /home/$USER/.kube/aks-sea-prod
+echo -e ${G}"Deploying K3d eks-demo..."${E}
+EKSDEMO=`k3d cluster list | grep eks-demo |  wc -l`
+if [[ $EKSDEMO -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d eks-demo exists..."
+else
+  k3d cluster create --api-port 16443 --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write eks-demo
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-demo.yaml
+  k3d kubeconfig merge eks-demo
+  cp ~/.k3d/kubeconfig-eks-demo.yaml /home/$USER/.kube/eks-useast1-prod
+fi
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* k3s-demo -p "8030:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write k3s-demo
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-k3s-demo.yaml
-k3d kubeconfig merge k3s-demo
+echo -e ${G}"Deploying K3d aks-demo..."${E}
+AKSDEMO=`k3d cluster list | grep aks-demo |  wc -l`
+if [[ $AKSDEMO -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d aks-demo exists..."${E}
+else
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write aks-demo
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-demo.yaml
+  k3d kubeconfig merge aks-demo
+  cp ~/.k3d/kubeconfig-aks-demo.yaml /home/$USER/.kube/aks-sea-prod
+fi 
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write eks-smoketest
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-smoketest.yaml
-k3d kubeconfig merge eks-smoketest
-cp ~/.k3d/kubeconfig-eks-smoketest.yaml /home/$USER/.kube/prod-aws
+echo -e ${G}"Deploying K3d k3s-demo..."${E}
+K3SDEMO=`k3d cluster list | grep k3s-demo |  wc -l`
+if [[ $K3SDEMO -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d k3s-demo exists..."${E}
+else
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* k3s-demo -p "8030:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write k3s-demo
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-k3s-demo.yaml
+  k3d kubeconfig merge k3s-demo
+fi
 
-k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
-k3d kubeconfig write aks-smoketest
-sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-smoketest.yaml
-k3d kubeconfig merge aks-smoketest
-cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
+echo -e ${G}"Deploying K3d eks-smoketest..."${E}
+EKSSMOKE=`k3d cluster list | grep eks-smoketest |  wc -l`
+if [[ $EKSSMOKE -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d eks-smoketest exists..."${E}
+else
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write eks-smoketest
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-smoketest.yaml
+  k3d kubeconfig merge eks-smoketest
+  cp ~/.k3d/kubeconfig-eks-smoketest.yaml /home/$USER/.kube/prod-aws
+fi
+
+
+echo -e ${G}"Deploying K3d aks-smoketest..."${E}
+AKSSMOKE=`k3d cluster list | grep aks-smoketest |  wc -l`
+if [[ $AKSSMOKE -eq 1 ]]; then
+  echo -e ${G}"Nothing to do, K3d aks-smoketest exists..."${E}
+else
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d kubeconfig write aks-smoketest
+  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-smoketest.yaml
+  k3d kubeconfig merge aks-smoketest
+  cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
+fi
 
 #########################
 # Deploy Cape
 #########################
 
 cd ~
+echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
+echo $GH_PAT1
 git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git
 cd cape-single-node-deploy-scripts
 ./install-cape-single.sh
