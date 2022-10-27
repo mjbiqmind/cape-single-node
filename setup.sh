@@ -22,6 +22,10 @@ echo $SERVER_IP
 export CAPE_DEMO_FQDN=$CAPE_DEMO_FQDN
 
 sudo -- sh -c "echo '$SERVER_IP $CAPE_DEMO_FQDN' >> /etc/hosts"
+sudo sysctl -w fs.file-max=100000
+sudo sysctl fs.inotify.max_user_instances=512
+sysctl -p
+
 
 # Determine OS platform
 UNAME=$(uname | tr "[:upper:]" "[:lower:]")
@@ -404,9 +408,11 @@ else
   k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write aks-smoketest
   cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
-  sed -i "s/0.0.0.0/$SERVER_IP/g" home/$USER/.kube/smoke-azure
+  sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/smoke-azure
   k3d kubeconfig merge aks-smoketest
 fi
+
+sleep 30
 
 #########################
 # Deploy Cape
@@ -414,6 +420,7 @@ fi
 
 cd ~
 echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
+rm -rf cape-single-node-deploy-scripts
 git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git -b main
 cd cape-single-node-deploy-scripts
 ./install-cape-single.sh

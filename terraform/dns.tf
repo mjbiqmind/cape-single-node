@@ -4,6 +4,6 @@ resource "cloudflare_record" "cloudflare_demo_dns" {
   name   = var.deployment_name
   value  = hcloud_server.cape_lab_server[0].ipv4_address
   type   = "A"
-  ttl = 600
+  ttl = 60
   depends_on = [hcloud_server.cape_lab_server]
 }

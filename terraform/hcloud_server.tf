@@ -35,12 +35,12 @@ resource "hcloud_server" "cape_lab_server" {
   }
 
   provisioner "file" {
-  source      = "./assets/files/cabundle"
+  source      = "./assets/files/certs/cabundle"
   destination = "/home/${var.user}/cabundle"
   }
 
   provisioner "file" {
-  source      = "./assets/files/pk"
+  source      = "./assets/files/certs/pk"
   destination = "/home/${var.user}/pk"
   }
 
@@ -53,4 +53,3 @@ resource "hcloud_server" "cape_lab_server" {
     ]
   }
 }
-
