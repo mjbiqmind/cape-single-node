@@ -29,6 +29,12 @@ variable "aws_instance_count" {}
 variable "aws_instance_image" {}
 variable "aws_instance_size" {}
 
+# Cloudflare variables
+variable "dns_service" {}
+variable "cloudflare_api_token" {}
+variable "cloudflare_zone_id" {}
+variable "cloudflare_provider_source" {}
+
 variable "environment_systemd_directory" {}
 variable "docker_compose_version" {}
 variable "code_server_version" {}

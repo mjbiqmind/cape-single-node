@@ -18,6 +18,7 @@ fi
 
 source .vars
 SERVER_IP=`curl ifconfig.me`
+export CAPE_DEMO_FQDN=$CAPE_DEMO_FQDN
 
 # Determine OS platform
 UNAME=$(uname | tr "[:upper:]" "[:lower:]")
@@ -410,7 +411,10 @@ fi
 
 cd ~
 echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
-git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git
+git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git -b main
 cd cape-single-node-deploy-scripts
 cp ~/cape-single-node/.vars .
+cp cape.yaml /home/$USER/cape.yaml
+sed -i "s/CAPE_DEMO_URL/$CAPE_DEMO_FQDN/g" /home/$USER/cape.yaml
+sudo -- sh -c "echo '$SERVER_IP $CAPE_DEMO_FQDN' >> /etc/hosts"
 ./install-cape-single.sh
