@@ -424,4 +424,4 @@ echo -e ${G}"Cloning CAPE Single Node deploy repo..."${E}
 rm -rf cape-single-node-deploy-scripts
 git clone https://$GH_PAT1@github.com/mjbiqmind/cape-single-node-deploy-scripts.git -b main
 cd cape-single-node-deploy-scripts
-./install-cape-single.sh
+. ./install-cape-single.sh
