@@ -351,9 +351,9 @@ if [[ $EKSDEMO -eq 1 ]]; then
 else
   k3d cluster create --api-port 16443 --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write eks-demo
-  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-demo.yaml
-  k3d kubeconfig merge eks-demo
   cp ~/.k3d/kubeconfig-eks-demo.yaml /home/$USER/.kube/eks-useast1-prod
+  sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/eks-useast1-prod
+  k3d kubeconfig merge eks-demo
 fi
 
 sleep 10
