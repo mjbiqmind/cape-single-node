@@ -26,5 +26,31 @@ resource "hcloud_server" "cape_lab_server" {
     type = "cape"
   }
   user_data = "${data.template_file.hcloud_init[0].rendered}"
+
+  connection {
+    type     = "ssh"
+    user     = var.user
+    private_key = tls_private_key.gen_ssh_key.private_key_pem
+    host     = hcloud_server.cape_lab_server[0].ipv4_address
+  }
+
+  provisioner "file" {
+  source      = "./assets/files/cabundle"
+  destination = "/home/${var.user}/cabundle"
+  }
+
+  provisioner "file" {
+  source      = "./assets/files/pk"
+  destination = "/home/${var.user}/pk"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "git clone https://github.com/mjbiqmind/cape-single-node.git",
+      "cp ~/cape-single-node/.vars.dist ~/cape-single-node/.vars",
+      "sed -i 's/Secure-GH-PAT1/${var.gh_pat1}/g' ~/cape-single-node/.vars",
+      "sed -i 's/cape.demo.fqdn/${var.cape_demo_fqdn}/g' ~/cape-single-node/.vars",
+    ]
+  }
 }
 

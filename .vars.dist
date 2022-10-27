@@ -2,7 +2,7 @@
 VSCODE_PASSWORD=SOME-SECURE-PASSWORD
 GH_PAT1=Secure-GH-PAT1
 GH_PAT2=Secure-GH-PAT2
-CAPE_DEMO_FQDN=cape-demo.dsodemo.org
+CAPE_DEMO_FQDN=cape.demo.fqdn
 
 # Misc Variables (Typically no need to change these.)
 VSCODE_DIR_PATH=/cape

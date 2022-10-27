@@ -18,6 +18,7 @@ fi
 
 source .vars
 SERVER_IP=`curl ifconfig.me`
+echo $SERVER_IP
 export CAPE_DEMO_FQDN=$CAPE_DEMO_FQDN
 
 sudo -- sh -c "echo '$SERVER_IP $CAPE_DEMO_FQDN' >> /etc/hosts"
@@ -364,9 +365,9 @@ if [[ $AKSDEMO -eq 1 ]]; then
 else
   k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write aks-demo
-  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-demo.yaml
-  k3d kubeconfig merge aks-demo
   cp ~/.k3d/kubeconfig-aks-demo.yaml /home/$USER/.kube/aks-sea-prod
+  sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/aks-sea-prod
+  k3d kubeconfig merge aks-demo
 fi 
 
 sleep 10
@@ -389,9 +390,9 @@ if [[ $EKSSMOKE -eq 1 ]]; then
 else
   k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write eks-smoketest
-  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-eks-smoketest.yaml
-  k3d kubeconfig merge eks-smoketest
   cp ~/.k3d/kubeconfig-eks-smoketest.yaml /home/$USER/.kube/prod-aws
+  sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/prod-aws
+  k3d kubeconfig merge eks-smoketest
 fi
 
 sleep 10
@@ -402,9 +403,9 @@ if [[ $AKSSMOKE -eq 1 ]]; then
 else
   k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write aks-smoketest
-  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-aks-smoketest.yaml
-  k3d kubeconfig merge aks-smoketest
   cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
+  sed -i "s/0.0.0.0/$SERVER_IP/g" home/$USER/.kube/smoke-azure
+  k3d kubeconfig merge aks-smoketest
 fi
 
 #########################

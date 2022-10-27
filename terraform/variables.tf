@@ -3,6 +3,8 @@ variable "deployment_name" {}
 variable "user" {}
 variable "cape_password" {}
 variable "code_server_password" {}
+variable "cape_demo_fqdn" {}
+variable "gh_pat1" {}
 
 # Hetzner (hcloud) variables
 variable "hcloud_enabled" {}

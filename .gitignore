@@ -12,6 +12,7 @@ ansible/files
 ansible/inventory
 /terraform.tfstate.d
 .vars
+/terraform/assets/files/certs/
 
 #Include
 !files/README.md
