@@ -354,7 +354,7 @@ EKSDEMO=`k3d cluster list | grep eks-demo |  wc -l`
 if [[ $EKSDEMO -eq 1 ]]; then
   echo -e ${G}"Nothing to do, K3d eks-demo exists..."
 else
-  k3d cluster create --api-port 16443 --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d cluster create --api-port 16443 --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-demo -p "8010:80@loadbalancer" -p "8011:443@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write eks-demo
   cp ~/.k3d/kubeconfig-eks-demo.yaml /home/$USER/.kube/eks-useast1-prod
   sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/eks-useast1-prod
@@ -367,7 +367,7 @@ AKSDEMO=`k3d cluster list | grep aks-demo |  wc -l`
 if [[ $AKSDEMO -eq 1 ]]; then
   echo -e ${G}"Nothing to do, K3d aks-demo exists..."${E}
 else
-  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-demo -p "8020:80@loadbalancer" -p "8021:443@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write aks-demo
   cp ~/.k3d/kubeconfig-aks-demo.yaml /home/$USER/.kube/aks-sea-prod
   sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/aks-sea-prod
@@ -380,9 +380,10 @@ K3SDEMO=`k3d cluster list | grep k3s-demo |  wc -l`
 if [[ $K3SDEMO -eq 1 ]]; then
   echo -e ${G}"Nothing to do, K3d k3s-demo exists..."${E}
 else
-  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* k3s-demo -p "8030:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* k3s-demo -p "8030:80@loadbalancer" -p "8031:443@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write k3s-demo
-  sed -i "s/0.0.0.0/$SERVER_IP/g" ~/.k3d/kubeconfig-k3s-demo.yaml
+  cp ~/.k3d/kubeconfig-k3s-demo.yaml /home/$USER/.kube/ire-ware-k3s
+  sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/ire-ware-k3s
   k3d kubeconfig merge k3s-demo
 fi
 
@@ -392,7 +393,7 @@ EKSSMOKE=`k3d cluster list | grep eks-smoketest |  wc -l`
 if [[ $EKSSMOKE -eq 1 ]]; then
   echo -e ${G}"Nothing to do, K3d eks-smoketest exists..."${E}
 else
-  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* eks-smoketest -p "8040:80@loadbalancer" -p "8041:443@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write eks-smoketest
   cp ~/.k3d/kubeconfig-eks-smoketest.yaml /home/$USER/.kube/prod-aws
   sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/prod-aws
@@ -405,7 +406,7 @@ AKSSMOKE=`k3d cluster list | grep aks-smoketest |  wc -l`
 if [[ $AKSSMOKE -eq 1 ]]; then
   echo -e ${G}"Nothing to do, K3d aks-smoketest exists..."${E}
 else
-  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
+  k3d cluster create --k3s-arg "--tls-san=$SERVER_IP"@server:* aks-smoketest -p "8050:80@loadbalancer" -p "8051:443@loadbalancer" --registry-use k3d-docker-io:5000 --registry-config assets/registry.yaml
   k3d kubeconfig write aks-smoketest
   cp ~/.k3d/kubeconfig-aks-smoketest.yaml /home/$USER/.kube/smoke-azure
   sed -i "s/0.0.0.0/$SERVER_IP/g" /home/$USER/.kube/smoke-azure
